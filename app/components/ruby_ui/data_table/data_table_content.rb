@@ -2,14 +2,23 @@
 
 module RubyUI
   class DataTableContent < Base
+    def initialize(tbody_id: "datatable_tbody", **attrs)
+      @tbody_id = tbody_id
+      super(**attrs)
+    end
+
     def view_template
       div(**attrs) do
         table(class: "w-full caption-bottom text-sm") do
           thead(class: "[&_tr]:border-b", data: {ruby_ui__data_table_target: "thead"})
-          tbody(class: "[&_tr:last-child]:border-0", data: {ruby_ui__data_table_target: "tbody"})
+          tbody(
+            id: @tbody_id,
+            class: "[&_tr:last-child]:border-0",
+            data: {ruby_ui__data_table_target: "tbody"}
+          )
         end
 
-        # Icon templates — rendered by Phlex, cloned by Stimulus. No SVG in JS.
+        # Header-only templates. Row cells come as pre-rendered HTML via Turbo Streams.
         template(data: {ruby_ui__data_table_target: "tplSortAsc"}) do
           svg(
             xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24",
