@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus";
+import * as Turbo from "@hotwired/turbo";
 import {
   createTable,
   getCoreRowModel,
@@ -237,19 +238,44 @@ export default class extends Controller {
     if (row) row.toggleExpanded();
   }
 
-  #fetchAndRender() {
+  async #fetchAndRender() {
     if (!this.hasSrcValue || !this.srcValue) return;
-    fetch(this.#buildURL(), { headers: { Accept: "application/json" } })
-      .then((r) => r.json())
-      .then(({ data, row_count }) => {
-        this.table.setOptions((prev) => ({
-          ...prev,
-          data,
-          rowCount: row_count,
-          state: this.tableState,
-        }));
-        this.render();
-        this.#syncURL();
+
+    const res = await fetch(this.#buildURL(), {
+      headers: { Accept: "text/vnd.turbo-stream.html" },
+    });
+    const html = await res.text();
+
+    // Turbo parses the <turbo-stream> and applies action="update" to #datatable_tbody
+    Turbo.renderStreamMessage(html);
+
+    // After DOM swap, re-sync client-side state with the new elements
+    this.#reconcileAfterSwap();
+    this.#renderHeaders(); // headers still driven by TanStack state (sort icons)
+    this.#syncPaginationUI();
+    this.#syncBulkActionsUI();
+    this.#syncURL();
+  }
+
+  // After Rails renders fresh tbody HTML, reconcile client-side state:
+  //  - checkbox .checked reflects tableState.rowSelection
+  //  - row rows with selection get the muted background
+  #reconcileAfterSwap() {
+    if (!this.hasTbodyTarget) return;
+
+    const selection = this.tableState.rowSelection || {};
+
+    this.tbodyTarget.querySelectorAll("tr[data-row-id]").forEach((tr) => {
+      const id = tr.dataset.rowId;
+      const isSelected = selection[id] === true;
+      tr.classList.toggle("bg-muted/50", isSelected);
+    });
+
+    this.tbodyTarget
+      .querySelectorAll("input[type=checkbox][data-row-id]")
+      .forEach((cb) => {
+        const id = cb.dataset.rowId;
+        cb.checked = selection[id] === true;
       });
   }
 
@@ -426,7 +452,21 @@ export default class extends Controller {
   }
 
   toggleAllRows(event) {
-    this.table.toggleAllPageRowsSelected(event.target.checked);
+    const checked = event.target.checked;
+    const ids = Array.from(
+      this.tbodyTarget.querySelectorAll("tr[data-row-id]")
+    ).map((tr) => tr.dataset.rowId);
+
+    this.table.setRowSelection((prev) => {
+      const next = { ...prev };
+      ids.forEach((id) => {
+        if (checked) next[id] = true;
+        else delete next[id];
+      });
+      return next;
+    });
+
+    this.#reconcileAfterSwap();
   }
 
   #renderRows() {
@@ -523,8 +563,11 @@ export default class extends Controller {
 
   toggleRow(event) {
     const rowId = event.target.dataset.rowId;
-    const row = this.table.getRowModel().rows.find((r) => r.id === rowId);
-    if (row) row.toggleSelected(event.target.checked);
+    const checked = event.target.checked;
+    this.table.setRowSelection((prev) => ({ ...prev, [rowId]: checked }));
+    // Update tr background immediately for responsiveness
+    const tr = event.target.closest("tr[data-row-id]");
+    if (tr) tr.classList.toggle("bg-muted/50", checked);
   }
 
   // Cell rendering: look up the Phlex-authored <template> for this column,
