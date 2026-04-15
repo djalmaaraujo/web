@@ -243,8 +243,10 @@ export default class extends Controller {
     });
     const html = await res.text();
 
-    // Turbo parses the <turbo-stream> and applies action="update" to #datatable_tbody
-    Turbo.renderStreamMessage(html);
+    // Turbo parses the <turbo-stream> and applies action="update" to #datatable_tbody.
+    // renderStreamMessage is async — await it so the DOM swap is complete before
+    // we reconcile checkbox state against the new elements.
+    await Turbo.renderStreamMessage(html);
 
     // After DOM swap, re-sync client-side state with the new elements
     this.#reconcileAfterSwap();
@@ -261,14 +263,6 @@ export default class extends Controller {
     if (!this.hasTbodyTarget) return;
 
     const selection = this.tableState.rowSelection || {};
-    const ids = Array.from(
-      this.tbodyTarget.querySelectorAll("tr[data-row-id]")
-    ).map((tr) => tr.dataset.rowId);
-    console.log("[DataTable] reconcileAfterSwap", {
-      selectionKeys: Object.keys(selection),
-      rowIdsInDom: ids,
-      matches: ids.filter((id) => selection[id] === true),
-    });
 
     this.tbodyTarget.querySelectorAll("tr[data-row-id]").forEach((tr) => {
       const id = tr.dataset.rowId;
