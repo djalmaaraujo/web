@@ -151,6 +151,12 @@ module Docs
             row_count: @total_count
           }
         end
+        format.turbo_stream do
+          rendered = render_to_string(
+            Views::Docs::DataTableDemo::Rows.new(employees: @employees)
+          )
+          render turbo_stream: turbo_stream.update("datatable_tbody", rendered)
+        end
       end
     end
   end
