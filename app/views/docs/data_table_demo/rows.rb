@@ -36,17 +36,25 @@ module Views
 
               td(class: "p-2 align-middle font-medium") { e.name }
               td(class: "p-2 align-middle text-muted-foreground") do
-                mail_to(e.email, class: "underline underline-offset-2 hover:text-primary")
+                if e.email.present?
+                  mail_to(e.email, class: "underline underline-offset-2 hover:text-primary")
+                end
               end
               td(class: "p-2 align-middle") { e.department }
               td(class: "p-2 align-middle") do
                 span(
-                  class: "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium #{STATUS_COLORS[e.status]}"
+                  class: "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium #{status_pill_class(e.status)}"
                 ) { e.status }
               end
-              td(class: "p-2 align-middle font-mono") { number_to_currency(e.salary, precision: 0) }
+              td(class: "p-2 align-middle font-mono text-right") { number_to_currency(e.salary, precision: 0) }
             end
           end
+        end
+
+        private
+
+        def status_pill_class(status)
+          STATUS_COLORS.fetch(status, "bg-muted text-muted-foreground")
         end
       end
     end
