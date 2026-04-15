@@ -152,8 +152,9 @@ module Docs
           }
         end
         format.turbo_stream do
+          cols = params[:cols].to_s.split(",").map(&:strip).reject(&:empty?).presence
           rendered = render_to_string(
-            Views::Docs::DataTableDemo::Rows.new(employees: @employees)
+            Views::Docs::DataTableDemo::Rows.new(employees: @employees, columns: cols)
           )
           render turbo_stream: turbo_stream.update("datatable_tbody", rendered)
         end

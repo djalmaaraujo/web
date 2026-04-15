@@ -213,6 +213,8 @@ class DocsController < ApplicationController
     offset = (page - 1) * per_page
     initial_data = employees.slice(offset, per_page) || []
 
+    cols = params[:cols].to_s.split(",").map(&:strip).reject(&:empty?).presence
+
     render Views::Docs::DataTable.new(
       initial_data: initial_data,
       total_count: total_count,
@@ -220,7 +222,8 @@ class DocsController < ApplicationController
       per_page: per_page,
       sort: params[:sort],
       direction: params[:direction],
-      search: params[:search]
+      search: params[:search],
+      cols: cols
     )
   end
 

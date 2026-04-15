@@ -1,0 +1,19 @@
+current directory: /workspaces/web/vendor/bundle/ruby/3.4.0/gems/debug-1.11.1/ext/debug
+/home/vscode/.local/share/mise/installs/ruby/3.4.7/bin/ruby extconf.rb
+creating Makefile
+
+current directory: /workspaces/web/vendor/bundle/ruby/3.4.0/gems/debug-1.11.1/ext/debug
+make DESTDIR\= sitearchdir\=./.gem.20260415-23119-68cp0s sitelibdir\=./.gem.20260415-23119-68cp0s clean
+
+current directory: /workspaces/web/vendor/bundle/ruby/3.4.0/gems/debug-1.11.1/ext/debug
+make DESTDIR\= sitearchdir\=./.gem.20260415-23119-68cp0s sitelibdir\=./.gem.20260415-23119-68cp0s
+compiling debug.c
+compiling iseq_collector.c
+linking shared-object debug/debug.so
+
+current directory: /workspaces/web/vendor/bundle/ruby/3.4.0/gems/debug-1.11.1/ext/debug
+make DESTDIR\= sitearchdir\=./.gem.20260415-23119-68cp0s sitelibdir\=./.gem.20260415-23119-68cp0s install
+/usr/bin/install -c -m 0755 debug.so ./.gem.20260415-23119-68cp0s/debug
+
+current directory: /workspaces/web/vendor/bundle/ruby/3.4.0/gems/debug-1.11.1/ext/debug
+make DESTDIR\= sitearchdir\=./.gem.20260415-23119-68cp0s sitelibdir\=./.gem.20260415-23119-68cp0s clean

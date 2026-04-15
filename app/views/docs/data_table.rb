@@ -18,7 +18,7 @@ class Views::Docs::DataTable < Views::Base
   DEMO_EMPLOYEES = ::Docs::DataTableDemoController::EMPLOYEES.first(10).freeze
 
   def initialize(initial_data: DEMO_EMPLOYEES, total_count: 100,
-    page: 1, per_page: 10, sort: nil, direction: nil, search: nil)
+    page: 1, per_page: 10, sort: nil, direction: nil, search: nil, cols: nil)
     @initial_data = initial_data
     @total_count = total_count
     @page = page
@@ -26,6 +26,23 @@ class Views::Docs::DataTable < Views::Base
     @sort = sort
     @direction = direction
     @search = search
+    @cols = cols # Array<String> of visible column keys, or nil for "all"
+  end
+
+  # Apply URL-driven column visibility on top of COLUMNS.
+  # When @cols is nil → use COLUMNS as-is (respects any `visible: false` already set).
+  # When @cols is an array → override: those columns visible, the rest hidden.
+  def resolved_columns
+    return COLUMNS if @cols.nil?
+
+    visible = @cols
+    COLUMNS.map do |c|
+      c.merge(visible: visible.include?(c[:key]))
+    end
+  end
+
+  def visible_column_keys
+    resolved_columns.reject { |c| c[:visible] == false }.map { |c| c[:key] }
   end
 
   def view_template
@@ -54,7 +71,7 @@ class Views::Docs::DataTable < Views::Base
           DataTable(
             src: docs_data_table_demo_path,
             data: @initial_data,
-            columns: COLUMNS,
+            columns: resolved_columns,
             row_count: @total_count,
             page: @page,
             per_page: @per_page,
@@ -84,7 +101,10 @@ class Views::Docs::DataTable < Views::Base
               end
             end
             DataTableContent do
-              render ::Views::Docs::DataTableDemo::Rows.new(employees: @initial_data)
+              render ::Views::Docs::DataTableDemo::Rows.new(
+                employees: @initial_data,
+                columns: visible_column_keys
+              )
             end
             DataTableExpandedRow do
               div(class: "p-4 bg-muted/20 space-y-2 text-sm") do
@@ -107,106 +127,95 @@ class Views::Docs::DataTable < Views::Base
 
       render Docs::VisualCodeExample.new(title: "Basic — static data, no server", context: self) do
         <<~RUBY
+          rows = [
+            {name: "Alice Johnson", department: "Engineering"},
+            {name: "Bob Smith", department: "Design"},
+            {name: "Carol White", department: "Product"}
+          ]
+
           DataTable(
-            data: [
-              {name: "Alice Johnson", department: "Engineering"},
-              {name: "Bob Smith", department: "Design"},
-              {name: "Carol White", department: "Product"}
-            ],
+            data: rows,
             columns: [
               {key: "name", header: "Name"},
               {key: "department", header: "Department"}
             ]
           ) do
-            DataTableContent()
+            DataTableContent do
+              rows.each do |r|
+                tr(class: "border-b transition-colors hover:bg-muted/50", data: {row_id: r[:name]}) do
+                  td(class: "p-2 align-middle font-medium") { r[:name] }
+                  td(class: "p-2 align-middle") { r[:department] }
+                end
+              end
+            end
           end
         RUBY
       end
 
-      render Docs::VisualCodeExample.new(title: "With cell components (badge + currency)", context: self) do
+      render Docs::VisualCodeExample.new(title: "With custom cell markup (badge + currency)", context: self) do
         <<~RUBY
+          rows = [
+            {name: "Alice Johnson", status: "Active", salary: 95_000},
+            {name: "Bob Smith", status: "Inactive", salary: 82_000},
+            {name: "Carol White", status: "On Leave", salary: 88_000}
+          ]
+
+          status_colors = {
+            "Active" => "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+            "Inactive" => "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+            "On Leave" => "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+          }
+
           DataTable(
-            data: [
-              {name: "Alice Johnson", status: "Active", salary: 95_000},
-              {name: "Bob Smith", status: "Inactive", salary: 82_000},
-              {name: "Carol White", status: "On Leave", salary: 88_000}
-            ],
+            data: rows,
             columns: [
               {key: "name", header: "Name"},
               {key: "status", header: "Status"},
               {key: "salary", header: "Salary"}
             ]
           ) do
-            DataTableContent()
-          end
-        RUBY
-      end
-
-      render Docs::VisualCodeExample.new(title: "With pagination (server-side)", context: self) do
-        <<~RUBY
-          DataTable(
-            src: docs_data_table_demo_path,
-            data: ::Docs::DataTableDemoController::EMPLOYEES.first(5).map { |e|
-              {name: e.name, department: e.department}
-            },
-            columns: [{key: "name", header: "Name"}, {key: "department", header: "Department"}],
-            row_count: 100,
-            page: 1,
-            per_page: 5
-          ) do
-            DataTableContent()
-            DataTablePagination(current_page: 1, total_pages: 20)
-          end
-        RUBY
-      end
-
-      render Docs::VisualCodeExample.new(title: "With toolbar (search + rows per page)", context: self) do
-        <<~RUBY
-          DataTable(
-            src: docs_data_table_demo_path,
-            data: ::Docs::DataTableDemoController::EMPLOYEES.first(5).map { |e|
-              {name: e.name, email: e.email, department: e.department}
-            },
-            columns: [
-              {key: "name", header: "Name"},
-              {key: "email", header: "Email"},
-              {key: "department", header: "Department"}
-            ],
-            row_count: 100,
-            page: 1,
-            per_page: 5
-          ) do
-            DataTableToolbar do
-              DataTableSearch(placeholder: "Search employees...")
-              DataTablePerPage(options: [5, 10, 25], current: 5)
+            DataTableContent do
+              rows.each do |r|
+                tr(class: "border-b transition-colors hover:bg-muted/50") do
+                  td(class: "p-2 align-middle font-medium") { r[:name] }
+                  td(class: "p-2 align-middle") do
+                    span(class: "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium \#{status_colors[r[:status]]}") { r[:status] }
+                  end
+                  td(class: "p-2 align-middle font-mono text-right") { helpers.number_to_currency(r[:salary], precision: 0) }
+                end
+              end
             end
-            DataTableContent()
-            DataTablePagination(current_page: 1, total_pages: 20)
           end
         RUBY
       end
 
       render Docs::VisualCodeExample.new(title: "With expandable rows", context: self) do
         <<~RUBY
+          rows = [
+            {id: 1, name: "Alice Johnson", department: "Engineering", bio: "Ruby developer since 2012. Leads the infra team."},
+            {id: 2, name: "Bob Smith", department: "Design", bio: "Former illustrator turned product designer."},
+            {id: 3, name: "Carol White", department: "Product", bio: "Focuses on growth loops and onboarding."}
+          ]
+
           DataTable(
-            data: [
-              {id: 1, name: "Alice Johnson", email: "alice@example.com", department: "Engineering", salary: 95_000, bio: "Ruby developer since 2012. Leads the infra team."},
-              {id: 2, name: "Bob Smith", email: "bob@example.com", department: "Design", salary: 82_000, bio: "Former illustrator turned product designer."},
-              {id: 3, name: "Carol White", email: "carol@example.com", department: "Product", salary: 88_000, bio: "Focuses on growth loops and onboarding."}
-            ],
+            data: rows,
             columns: [
               {key: "name", header: "Name"},
               {key: "department", header: "Department"},
-              {key: "salary", header: "Salary"},
-              {key: "bio", header: "Bio", visible: false},
-              {key: "email", header: "Email", visible: false}
+              {key: "bio", header: "Bio", visible: false}
             ],
             options: {enableExpanding: true}
           ) do
-            DataTableContent()
+            DataTableContent do
+              rows.each do |r|
+                tr(class: "border-b transition-colors hover:bg-muted/50", data: {row_id: r[:id]}) do
+                  td(class: "p-2 align-middle font-medium") { r[:name] }
+                  td(class: "p-2 align-middle") { r[:department] }
+                end
+              end
+            end
             DataTableExpandedRow do
               div(class: "p-4 bg-muted/20 space-y-2 text-sm") do
-                div { strong { "Email: " }; span(data: {field: "email"}) {} }
                 div { strong { "Bio: " }; span(data: {field: "bio"}) {} }
               end
             end
@@ -214,40 +223,18 @@ class Views::Docs::DataTable < Views::Base
         RUBY
       end
 
-      render Docs::VisualCodeExample.new(title: "With column visibility toggle", context: self) do
-        <<~RUBY
-          DataTable(
-            data: [
-              {id: 1, name: "Alice Johnson", email: "alice@example.com", department: "Engineering", salary: 95_000},
-              {id: 2, name: "Bob Smith", email: "bob@example.com", department: "Design", salary: 82_000},
-              {id: 3, name: "Carol White", email: "carol@example.com", department: "Product", salary: 88_000}
-            ],
-            columns: [
-              {key: "name", header: "Name"},
-              {key: "email", header: "Email", visible: false},
-              {key: "department", header: "Department"},
-              {key: "salary", header: "Salary"}
-            ]
-          ) do
-            DataTableToolbar do
-              div {}
-              DataTableColumnToggle()
-            end
-            DataTableContent()
-          end
-        RUBY
-      end
-
       render Docs::VisualCodeExample.new(title: "With row selection and bulk actions", context: self) do
         <<~RUBY
+          rows = [
+            {id: 1, name: "Alice Johnson", department: "Engineering", status: "Active"},
+            {id: 2, name: "Bob Smith", department: "Design", status: "Active"},
+            {id: 3, name: "Carol White", department: "Product", status: "On Leave"},
+            {id: 4, name: "David Brown", department: "Engineering", status: "Active"},
+            {id: 5, name: "Eve Davis", department: "Marketing", status: "Inactive"}
+          ]
+
           DataTable(
-            data: [
-              {id: 1, name: "Alice Johnson", department: "Engineering", status: "Active"},
-              {id: 2, name: "Bob Smith", department: "Design", status: "Active"},
-              {id: 3, name: "Carol White", department: "Product", status: "On Leave"},
-              {id: 4, name: "David Brown", department: "Engineering", status: "Active"},
-              {id: 5, name: "Eve Davis", department: "Marketing", status: "Inactive"}
-            ],
+            data: rows,
             columns: [
               {key: "name", header: "Name"},
               {key: "department", header: "Department"},
@@ -256,16 +243,32 @@ class Views::Docs::DataTable < Views::Base
             selectable: true
           ) do
             DataTableToolbar do
-              DataTableSearch(placeholder: "Search...")
               DataTableBulkActions do
                 span(class: "text-sm text-muted-foreground", data: {selection_count: true}) {}
                 Button(variant: :destructive, size: :sm) { "Delete selected" }
               end
             end
-            DataTableContent()
+            DataTableContent do
+              rows.each do |r|
+                tr(class: "border-b transition-colors hover:bg-muted/50", data: {row_id: r[:id]}) do
+                  td(class: "w-10 px-2 align-middle") do
+                    input(type: "checkbox",
+                          class: "h-4 w-4 rounded border border-input accent-primary cursor-pointer",
+                          data: {row_id: r[:id], action: "change->ruby-ui--data-table#toggleRow"})
+                  end
+                  td(class: "p-2 align-middle font-medium") { r[:name] }
+                  td(class: "p-2 align-middle") { r[:department] }
+                  td(class: "p-2 align-middle") { r[:status] }
+                end
+              end
+            end
           end
         RUBY
       end
+
+      p(class: "text-sm text-muted-foreground mt-4") {
+        plain "Pagination, search, per-page, and column visibility require a server endpoint (they trigger Turbo Stream fetches). See the full-featured demo at the top of this page for those features."
+      }
 
       # ── Overview ────────────────────────────────────────────────────────────
       Heading(level: 2) { "Overview" }

@@ -1,0 +1,18 @@
+current directory: /workspaces/web/vendor/bundle/ruby/3.4.0/gems/bindex-0.8.1/ext/skiptrace
+/home/vscode/.local/share/mise/installs/ruby/3.4.7/bin/ruby extconf.rb
+creating Makefile
+
+current directory: /workspaces/web/vendor/bundle/ruby/3.4.0/gems/bindex-0.8.1/ext/skiptrace
+make DESTDIR\= sitearchdir\=./.gem.20260415-23119-7y996t sitelibdir\=./.gem.20260415-23119-7y996t clean
+
+current directory: /workspaces/web/vendor/bundle/ruby/3.4.0/gems/bindex-0.8.1/ext/skiptrace
+make DESTDIR\= sitearchdir\=./.gem.20260415-23119-7y996t sitelibdir\=./.gem.20260415-23119-7y996t
+compiling cruby.c
+linking shared-object skiptrace/internal/cruby.so
+
+current directory: /workspaces/web/vendor/bundle/ruby/3.4.0/gems/bindex-0.8.1/ext/skiptrace
+make DESTDIR\= sitearchdir\=./.gem.20260415-23119-7y996t sitelibdir\=./.gem.20260415-23119-7y996t install
+/usr/bin/install -c -m 0755 cruby.so ./.gem.20260415-23119-7y996t/skiptrace/internal
+
+current directory: /workspaces/web/vendor/bundle/ruby/3.4.0/gems/bindex-0.8.1/ext/skiptrace
+make DESTDIR\= sitearchdir\=./.gem.20260415-23119-7y996t sitelibdir\=./.gem.20260415-23119-7y996t clean

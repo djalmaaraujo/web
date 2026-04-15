@@ -132,7 +132,13 @@ export default class extends Controller {
             : updater;
         this.tableState = { ...this.tableState, columnVisibility: next };
         this.table.setOptions((p) => ({ ...p, state: this.tableState }));
-        this.render();
+        // Column visibility changes tbody layout — refetch from the server
+        // so the rendered cells match the visible columns.
+        if (this.hasServer) {
+          this.#fetchAndRender();
+        } else {
+          this.render();
+        }
       },
       onExpandedChange: (updater) => {
         const next =
@@ -255,6 +261,14 @@ export default class extends Controller {
     if (!this.hasTbodyTarget) return;
 
     const selection = this.tableState.rowSelection || {};
+    const ids = Array.from(
+      this.tbodyTarget.querySelectorAll("tr[data-row-id]")
+    ).map((tr) => tr.dataset.rowId);
+    console.log("[DataTable] reconcileAfterSwap", {
+      selectionKeys: Object.keys(selection),
+      rowIdsInDom: ids,
+      matches: ids.filter((id) => selection[id] === true),
+    });
 
     this.tbodyTarget.querySelectorAll("tr[data-row-id]").forEach((tr) => {
       const id = tr.dataset.rowId;
@@ -272,7 +286,7 @@ export default class extends Controller {
 
   // Query params we own — deleted before being re-set to keep the URL clean
   // when state is cleared (e.g. search emptied, sort removed).
-  static MANAGED_PARAMS = ["page", "per_page", "sort", "direction", "search"];
+  static MANAGED_PARAMS = ["page", "per_page", "sort", "direction", "search", "cols"];
 
   // Builds a URLSearchParams from current table state. Used by both the fetch
   // URL (targets srcValue) and the display URL (targets current pathname).
@@ -289,6 +303,18 @@ export default class extends Controller {
     if (this.tableState.globalFilter) {
       params.set("search", this.tableState.globalFilter);
     }
+
+    // Column visibility — only send `cols` if the user has hidden something.
+    // Otherwise omit the param so the server uses its full column set.
+    const visibility = this.tableState.columnVisibility || {};
+    const hiddenKeys = Object.keys(visibility).filter((k) => visibility[k] === false);
+    if (hiddenKeys.length > 0) {
+      const visible = this.columnsValue
+        .map((c) => c.key)
+        .filter((key) => visibility[key] !== false);
+      params.set("cols", visible.join(","));
+    }
+
     return params;
   }
 

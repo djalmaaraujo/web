@@ -1,0 +1,10 @@
++ /usr/bin/install -d /workspaces/web/vendor/bundle/ruby/3.4.0/gems/sqlite3-2.9.0/ports/aarch64-linux-gnu/sqlite3/3.51.1/lib
+/usr/bin/install -m 0644 libsqlite3.a "/workspaces/web/vendor/bundle/ruby/3.4.0/gems/sqlite3-2.9.0/ports/aarch64-linux-gnu/sqlite3/3.51.1/lib"
++ /usr/bin/install -d /workspaces/web/vendor/bundle/ruby/3.4.0/gems/sqlite3-2.9.0/ports/aarch64-linux-gnu/sqlite3/3.51.1/bin
+/usr/bin/install sqlite3 "/workspaces/web/vendor/bundle/ruby/3.4.0/gems/sqlite3-2.9.0/ports/aarch64-linux-gnu/sqlite3/3.51.1/bin"
++ /usr/bin/install -d /workspaces/web/vendor/bundle/ruby/3.4.0/gems/sqlite3-2.9.0/ports/aarch64-linux-gnu/sqlite3/3.51.1/include
+/usr/bin/install -m 0644 /workspaces/web/vendor/bundle/ruby/3.4.0/gems/sqlite3-2.9.0/ext/sqlite3/tmp/aarch64-linux-gnu/ports/sqlite3/3.51.1/sqlite-autoconf-3510100/sqlite3.h /workspaces/web/vendor/bundle/ruby/3.4.0/gems/sqlite3-2.9.0/ext/sqlite3/tmp/aarch64-linux-gnu/ports/sqlite3/3.51.1/sqlite-autoconf-3510100/sqlite3ext.h "/workspaces/web/vendor/bundle/ruby/3.4.0/gems/sqlite3-2.9.0/ports/aarch64-linux-gnu/sqlite3/3.51.1/include"
++ /usr/bin/install -d /workspaces/web/vendor/bundle/ruby/3.4.0/gems/sqlite3-2.9.0/ports/aarch64-linux-gnu/sqlite3/3.51.1/lib/pkgconfig
+/usr/bin/install -m 0644 sqlite3.pc "/workspaces/web/vendor/bundle/ruby/3.4.0/gems/sqlite3-2.9.0/ports/aarch64-linux-gnu/sqlite3/3.51.1/lib/pkgconfig"
++ /usr/bin/install -d /workspaces/web/vendor/bundle/ruby/3.4.0/gems/sqlite3-2.9.0/ports/aarch64-linux-gnu/sqlite3/3.51.1/share/man/man1
+/usr/bin/install -m 0644 /workspaces/web/vendor/bundle/ruby/3.4.0/gems/sqlite3-2.9.0/ext/sqlite3/tmp/aarch64-linux-gnu/ports/sqlite3/3.51.1/sqlite-autoconf-3510100/sqlite3.1 "/workspaces/web/vendor/bundle/ruby/3.4.0/gems/sqlite3-2.9.0/ports/aarch64-linux-gnu/sqlite3/3.51.1/share/man/man1"

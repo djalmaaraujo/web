@@ -13,9 +13,14 @@ module Views
           "On Leave" => "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
         }.freeze
 
-        def initialize(employees:, selectable: true)
+        ALL_COLUMNS = %w[name email department status salary].freeze
+
+        # @param columns [Array<String>, nil] subset of ALL_COLUMNS, in order.
+        #   nil renders all columns.
+        def initialize(employees:, selectable: true, columns: nil)
           @employees = employees
           @selectable = selectable
+          @columns = columns || ALL_COLUMNS
         end
 
         def view_template
@@ -34,24 +39,33 @@ module Views
                 end
               end
 
-              td(class: "p-2 align-middle font-medium") { e.name }
-              td(class: "p-2 align-middle text-muted-foreground") do
-                if e.email.present?
-                  mail_to(e.email, class: "underline underline-offset-2 hover:text-primary")
-                end
-              end
-              td(class: "p-2 align-middle") { e.department }
-              td(class: "p-2 align-middle") do
-                span(
-                  class: "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium #{status_pill_class(e.status)}"
-                ) { e.status }
-              end
-              td(class: "p-2 align-middle font-mono text-right") { number_to_currency(e.salary, precision: 0) }
+              @columns.each { |col| render_cell(e, col) }
             end
           end
         end
 
         private
+
+        def render_cell(e, col)
+          case col
+          when "name"
+            td(class: "p-2 align-middle font-medium") { e.name }
+          when "email"
+            td(class: "p-2 align-middle text-muted-foreground") do
+              mail_to(e.email, class: "underline underline-offset-2 hover:text-primary") if e.email.present?
+            end
+          when "department"
+            td(class: "p-2 align-middle") { e.department }
+          when "status"
+            td(class: "p-2 align-middle") do
+              span(
+                class: "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium #{status_pill_class(e.status)}"
+              ) { e.status }
+            end
+          when "salary"
+            td(class: "p-2 align-middle font-mono text-right") { number_to_currency(e.salary, precision: 0) }
+          end
+        end
 
         def status_pill_class(status)
           STATUS_COLORS.fetch(status, "bg-muted text-muted-foreground")

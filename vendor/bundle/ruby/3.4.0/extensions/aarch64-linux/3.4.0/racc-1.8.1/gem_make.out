@@ -1,0 +1,18 @@
+current directory: /workspaces/web/vendor/bundle/ruby/3.4.0/gems/racc-1.8.1/ext/racc/cparse
+/home/vscode/.local/share/mise/installs/ruby/3.4.7/bin/ruby extconf.rb
+creating Makefile
+
+current directory: /workspaces/web/vendor/bundle/ruby/3.4.0/gems/racc-1.8.1/ext/racc/cparse
+make DESTDIR\= sitearchdir\=./.gem.20260415-23119-451tjt sitelibdir\=./.gem.20260415-23119-451tjt clean
+
+current directory: /workspaces/web/vendor/bundle/ruby/3.4.0/gems/racc-1.8.1/ext/racc/cparse
+make DESTDIR\= sitearchdir\=./.gem.20260415-23119-451tjt sitelibdir\=./.gem.20260415-23119-451tjt
+compiling cparse.c
+linking shared-object racc/cparse.so
+
+current directory: /workspaces/web/vendor/bundle/ruby/3.4.0/gems/racc-1.8.1/ext/racc/cparse
+make DESTDIR\= sitearchdir\=./.gem.20260415-23119-451tjt sitelibdir\=./.gem.20260415-23119-451tjt install
+/usr/bin/install -c -m 0755 cparse.so ./.gem.20260415-23119-451tjt/racc
+
+current directory: /workspaces/web/vendor/bundle/ruby/3.4.0/gems/racc-1.8.1/ext/racc/cparse
+make DESTDIR\= sitearchdir\=./.gem.20260415-23119-451tjt sitelibdir\=./.gem.20260415-23119-451tjt clean
