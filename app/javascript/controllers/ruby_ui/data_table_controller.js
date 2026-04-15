@@ -270,26 +270,46 @@ export default class extends Controller {
       });
   }
 
-  #buildURL() {
-    const url = new URL(this.srcValue, window.location.origin);
+  // Query params we own — deleted before being re-set to keep the URL clean
+  // when state is cleared (e.g. search emptied, sort removed).
+  static MANAGED_PARAMS = ["page", "per_page", "sort", "direction", "search"];
+
+  // Builds a URLSearchParams from current table state. Used by both the fetch
+  // URL (targets srcValue) and the display URL (targets current pathname).
+  #buildParams() {
+    const params = new URLSearchParams();
     const { pageIndex, pageSize } = this.tableState.pagination;
-    url.searchParams.set("page", pageIndex + 1);
-    url.searchParams.set("per_page", pageSize);
+    params.set("page", pageIndex + 1);
+    params.set("per_page", pageSize);
     if (this.tableState.sorting.length > 0) {
       const { id, desc } = this.tableState.sorting[0];
-      url.searchParams.set("sort", id);
-      url.searchParams.set("direction", desc ? "desc" : "asc");
+      params.set("sort", id);
+      params.set("direction", desc ? "desc" : "asc");
     }
     if (this.tableState.globalFilter) {
-      url.searchParams.set("search", this.tableState.globalFilter);
+      params.set("search", this.tableState.globalFilter);
     }
+    return params;
+  }
+
+  // URL we hit on the server for data. Path comes from the consumer's `src:`.
+  #buildURL() {
+    const url = new URL(this.srcValue, window.location.origin);
+    this.#buildParams().forEach((v, k) => url.searchParams.set(k, v));
     return url.toString();
   }
 
+  // URL we show in the browser address bar. Path stays on the CURRENT page
+  // (e.g. /docs/data_table), only query params update.
   #syncURL() {
     if (!this.hasSrcValue || !this.srcValue) return;
     if (!this.syncUrlValue) return;
-    history.replaceState(null, "", this.#buildURL());
+
+    const url = new URL(window.location.href);
+    this.constructor.MANAGED_PARAMS.forEach((k) => url.searchParams.delete(k));
+    this.#buildParams().forEach((v, k) => url.searchParams.set(k, v));
+
+    history.replaceState(null, "", url.toString());
   }
 
   #syncPaginationUI() {
