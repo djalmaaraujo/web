@@ -15,9 +15,7 @@ class Views::Docs::DataTable < Views::Base
     "On Leave" => "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
   }.freeze
 
-  DEMO_EMPLOYEES = ::Docs::DataTableDemoController::EMPLOYEES.first(10).map do |e|
-    {id: e.id, name: e.name, email: e.email, department: e.department, status: e.status, salary: e.salary}
-  end.freeze
+  DEMO_EMPLOYEES = ::Docs::DataTableDemoController::EMPLOYEES.first(10).freeze
 
   def initialize(initial_data: DEMO_EMPLOYEES, total_count: 100,
     page: 1, per_page: 10, sort: nil, direction: nil, search: nil)
@@ -85,7 +83,9 @@ class Views::Docs::DataTable < Views::Base
                 DataTablePerPage(options: [5, 10, 25, 50], current: @per_page)
               end
             end
-            DataTableContent()
+            DataTableContent do
+              render ::Views::Docs::DataTableDemo::Rows.new(employees: @initial_data)
+            end
             DataTableExpandedRow do
               div(class: "p-4 bg-muted/20 space-y-2 text-sm") do
                 div(class: "flex gap-2") { strong { "Employee ID: " }; span(data: {field: "id"}) {} }

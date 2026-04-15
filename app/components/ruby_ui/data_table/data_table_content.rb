@@ -7,7 +7,7 @@ module RubyUI
       super(**attrs)
     end
 
-    def view_template
+    def view_template(&block)
       div(**attrs) do
         table(class: "w-full caption-bottom text-sm") do
           thead(class: "[&_tr]:border-b", data: {ruby_ui__data_table_target: "thead"})
@@ -15,7 +15,9 @@ module RubyUI
             id: @tbody_id,
             class: "[&_tr:last-child]:border-0",
             data: {ruby_ui__data_table_target: "tbody"}
-          )
+          ) do
+            yield if block_given?
+          end
         end
 
         # Header-only templates. Row cells come as pre-rendered HTML via Turbo Streams.

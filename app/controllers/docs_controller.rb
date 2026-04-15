@@ -211,9 +211,7 @@ class DocsController < ApplicationController
     total_pages = [(total_count.to_f / per_page).ceil, 1].max
     page = [page, total_pages].min
     offset = (page - 1) * per_page
-    initial_data = (employees.slice(offset, per_page) || []).map do |e|
-      {id: e.id, name: e.name, email: e.email, department: e.department, status: e.status, salary: e.salary}
-    end
+    initial_data = employees.slice(offset, per_page) || []
 
     render Views::Docs::DataTable.new(
       initial_data: initial_data,

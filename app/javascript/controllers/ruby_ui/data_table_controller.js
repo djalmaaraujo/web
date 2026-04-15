@@ -90,11 +90,9 @@ export default class extends Controller {
           typeof updater === "function"
             ? updater(this.tableState.pagination)
             : updater;
-        this.rowSelection = {};
         this.tableState = {
           ...this.tableState,
           pagination: next,
-          rowSelection: {},
         };
         this.table.setOptions((p) => ({ ...p, state: this.tableState }));
         this.#fetchAndRender();
@@ -104,12 +102,10 @@ export default class extends Controller {
           typeof updater === "function"
             ? updater(this.tableState.sorting)
             : updater;
-        this.rowSelection = {};
         this.tableState = {
           ...this.tableState,
           sorting: next,
           pagination: { ...this.tableState.pagination, pageIndex: 0 },
-          rowSelection: {},
         };
         this.table.setOptions((p) => ({ ...p, state: this.tableState }));
         if (this.hasServer) {
@@ -178,12 +174,10 @@ export default class extends Controller {
     if (this.searchTimeout) clearTimeout(this.searchTimeout);
     this.searchTimeout = setTimeout(() => {
       const query = this.searchTarget.value;
-      this.rowSelection = {};
       this.tableState = {
         ...this.tableState,
         globalFilter: query,
         pagination: { ...this.tableState.pagination, pageIndex: 0 },
-        rowSelection: {},
       };
       this.table.setOptions((p) => ({ ...p, state: this.tableState }));
       this.#fetchAndRender();
@@ -192,11 +186,9 @@ export default class extends Controller {
 
   changePerPage() {
     const pageSize = parseInt(this.perPageTarget.value);
-    this.rowSelection = {};
     this.tableState = {
       ...this.tableState,
       pagination: { pageIndex: 0, pageSize },
-      rowSelection: {},
     };
     this.table.setOptions((p) => ({ ...p, state: this.tableState }));
     this.#fetchAndRender();
