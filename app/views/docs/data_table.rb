@@ -85,9 +85,6 @@ class Views::Docs::DataTable < Views::Base
                 DataTablePerPage(options: [5, 10, 25, 50], current: @per_page)
               end
             end
-            DataTableCellBadge(key: "status", colors: STATUS_COLORS)
-            DataTableCellCurrency(key: "salary")
-            DataTableCellLink(key: "email", href: "mailto:{value}")
             DataTableContent()
             DataTableExpandedRow do
               div(class: "p-4 bg-muted/20 space-y-2 text-sm") do
@@ -140,12 +137,6 @@ class Views::Docs::DataTable < Views::Base
               {key: "salary", header: "Salary"}
             ]
           ) do
-            DataTableCellBadge(key: "status", colors: {
-              "Active"   => "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-              "Inactive" => "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-              "On Leave" => "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-            })
-            DataTableCellCurrency(key: "salary")
             DataTableContent()
           end
         RUBY
@@ -212,7 +203,6 @@ class Views::Docs::DataTable < Views::Base
             ],
             options: {enableExpanding: true}
           ) do
-            DataTableCellCurrency(key: "salary")
             DataTableContent()
             DataTableExpandedRow do
               div(class: "p-4 bg-muted/20 space-y-2 text-sm") do
@@ -239,7 +229,6 @@ class Views::Docs::DataTable < Views::Base
               {key: "salary", header: "Salary"}
             ]
           ) do
-            DataTableCellCurrency(key: "salary")
             DataTableToolbar do
               div {}
               DataTableColumnToggle()
@@ -266,11 +255,6 @@ class Views::Docs::DataTable < Views::Base
             ],
             selectable: true
           ) do
-            DataTableCellBadge(key: "status", colors: {
-              "Active"   => "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-              "Inactive" => "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-              "On Leave" => "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
-            })
             DataTableToolbar do
               DataTableSearch(placeholder: "Search...")
               DataTableBulkActions do
@@ -413,141 +397,55 @@ class Views::Docs::DataTable < Views::Base
         end
       RUBY
 
-      # ── Cell components ──────────────────────────────────────────────────────
-      Heading(level: 2) { "Cell components" }
+      # ── Cell rendering ───────────────────────────────────────────────────────
+      Heading(level: 2) { "Cell rendering" }
       p {
-        plain "Cell formatting is done with "
-        strong { "Phlex components" }
-        plain ". Each one renders an HTML "
-        code(class: "font-mono text-xs") { "<template>" }
-        plain " (Web Components primitive) that the Stimulus controller clones per row. "
-        plain "All markup (classes, wrapping elements, aria attributes) lives in Ruby — no HTML strings in JavaScript. "
-        plain "Transformations that require computation (currency format, date format) use "
-        strong { "browser-native " }
-        code(class: "font-mono text-xs") { "Intl" }
-        plain " APIs via data attributes."
-      }
-      p(class: "mt-2") {
-        plain "Declare a cell component inside the "
-        code(class: "font-mono text-xs") { "DataTable" }
-        plain " block with the "
-        code(class: "font-mono text-xs") { "key:" }
-        plain " matching the column. Columns without a cell component render as plain HTML-escaped text."
-      }
-      p(class: "mt-2") { plain "Built-in components:" }
-      ul(class: "list-disc list-inside space-y-1 mt-2") do
-        li {
-          code(class: "font-mono text-xs") { "DataTableCellText" }
-          plain " — default when no cell is declared; just a "
-          code(class: "font-mono text-xs") { "<span>" }
-          plain " with escaped text. Also the way to add a custom "
-          code(class: "font-mono text-xs") { "class:" }
-          plain " to the wrapping span."
-        }
-        li {
-          code(class: "font-mono text-xs") { "DataTableCellBadge" }
-          plain " — colored pill. "
-          code(class: "font-mono text-xs") { 'colors: {"Active" => "bg-green-100 text-green-800"}' }
-          plain ", optional "
-          code(class: "font-mono text-xs") { "fallback:" }
-          plain " class for unmapped values."
-        }
-        li {
-          code(class: "font-mono text-xs") { "DataTableCellCurrency" }
-          plain " — via "
-          code(class: "font-mono text-xs") { "Intl.NumberFormat" }
-          plain ". Options: "
-          code(class: "font-mono text-xs") { 'currency: "BRL"' }
-          plain ", "
-          code(class: "font-mono text-xs") { "digits: 2" }
-          plain ", "
-          code(class: "font-mono text-xs") { 'locale: "pt-BR"' }
-        }
-        li {
-          code(class: "font-mono text-xs") { "DataTableCellNumber" }
-          plain " — thousands-separated integer via "
-          code(class: "font-mono text-xs") { "Intl.NumberFormat" }
-        }
-        li {
-          code(class: "font-mono text-xs") { "DataTableCellPercent" }
-          plain " — accepts "
-          code(class: "font-mono text-xs") { "0.25" }
-          plain " → "
-          code(class: "font-mono text-xs") { "25%" }
-          plain "; optional "
-          code(class: "font-mono text-xs") { "digits:" }
-        }
-        li {
-          code(class: "font-mono text-xs") { "DataTableCellDate" }
-          plain " — "
-          code(class: "font-mono text-xs") { "Date.toLocaleDateString()" }
-        }
-        li {
-          code(class: "font-mono text-xs") { "DataTableCellBoolean" }
-          plain " — ✓ / —"
-        }
-        li {
-          code(class: "font-mono text-xs") { "DataTableCellLink" }
-          plain " — renders "
-          code(class: "font-mono text-xs") { "<a>" }
-          plain ". "
-          code(class: "font-mono text-xs") { 'href: "/users/{value}"' }
-          plain " with placeholder substitution; optional "
-          code(class: "font-mono text-xs") { "label:" }
-          plain " (fixed link text) and "
-          code(class: "font-mono text-xs") { "target:" }
-        }
-        li {
-          code(class: "font-mono text-xs") { "DataTableCellTruncate" }
-          plain " — clips long strings, shows full value on hover. "
-          code(class: "font-mono text-xs") { "max: 40" }
-        }
-      end
-      p(class: "mt-2") {
-        plain "Need something not in this list? Write your own "
-        code(class: "font-mono text-xs") { "DataTable{Something}Cell" }
-        plain " component following the same pattern — render a "
-        code(class: "font-mono text-xs") { "<template>" }
-        plain " with the target "
-        code(class: "font-mono text-xs") { 'data-ruby-ui--data-table-target="tplCell_<key>"' }
-        plain " and mark value placeholders with "
-        code(class: "font-mono text-xs") { "data-field" }
-        plain ". No JavaScript required."
+        plain "Cells are rendered by Rails — not by the component. On every table interaction "
+        plain "(pagination, sort, search), the server responds with a Turbo Stream that updates "
+        code(class: "font-mono text-xs") { "<tbody>" }
+        plain ". Formatting, links, badges, and any other presentation concern live in your Phlex/ERB row view. "
+        plain "This keeps helpers like "
+        code(class: "font-mono text-xs") { "number_to_currency" }
+        plain ", "
+        code(class: "font-mono text-xs") { "link_to" }
+        plain ", and "
+        code(class: "font-mono text-xs") { "l(date)" }
+        plain " available — no JSON serialization, no JavaScript cell renderers."
       }
 
-      render Docs::VisualCodeExample.new(title: "All built-in cell components", context: self) do
+      render Docs::VisualCodeExample.new(title: "Cells rendered by Rails", context: self) do
         <<~RUBY
+          # Cell formatting lives in your Rails view (Phlex/ERB), not in the component.
+          # In your controller:
+          #
+          #   respond_to do |format|
+          #     format.html # initial page render
+          #     format.turbo_stream do
+          #       render turbo_stream: turbo_stream.update(
+          #         "datatable_tbody",
+          #         render_to_string(Views::Employees::Rows.new(employees: @employees))
+          #       )
+          #     end
+          #   end
+          #
+          # Inside Views::Employees::Rows (Phlex):
+          #   td(class: "font-mono text-right") { number_to_currency(e.salary, precision: 0) }
+          #   td { link_to e.name, employee_path(e) }
+          #   td { l(e.hired_at, format: :short) }
+
           DataTable(
-            data: [
-              {id: 1, title: "Fix login bug that happens under concurrent load on Tuesdays", done: true,  priority: "high",   growth: 0.25, due: "2026-05-14", link_to: "1", views: 12_430, budget: 45_000},
-              {id: 2, title: "Ship dashboard v2",                                              done: false, priority: "medium", growth: 0.08, due: "2026-06-01", link_to: "2", views: 850,    budget: 12_000},
-              {id: 3, title: "Write migration docs",                                           done: false, priority: "low",    growth: -0.03, due: "2026-06-20", link_to: "3", views: 215,    budget: 3_500}
-            ],
+            src: "/employees",
+            data: [],
             columns: [
-              {key: "id", header: "#"},
-              {key: "title", header: "Title"},
-              {key: "done", header: "Done"},
-              {key: "priority", header: "Priority"},
-              {key: "growth", header: "Growth"},
-              {key: "views", header: "Views"},
-              {key: "budget", header: "Budget"},
-              {key: "due", header: "Due"},
-              {key: "link_to", header: ""}
-            ]
+              {key: "name", header: "Name"},
+              {key: "salary", header: "Salary"}
+            ],
+            row_count: 0,
+            page: 1,
+            per_page: 10
           ) do
-            DataTableCellTruncate(key: "title", max: 30)
-            DataTableCellBoolean(key: "done")
-            DataTableCellBadge(key: "priority", colors: {
-              "high"   => "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-              "medium" => "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-              "low"    => "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200"
-            })
-            DataTableCellPercent(key: "growth", digits: 1)
-            DataTableCellNumber(key: "views")
-            DataTableCellCurrency(key: "budget")
-            DataTableCellDate(key: "due")
-            DataTableCellLink(key: "link_to", href: "/tasks/{value}", label: "Open →")
             DataTableContent()
+            DataTablePagination(current_page: 1, total_pages: 1)
           end
         RUBY
       end
@@ -774,15 +672,6 @@ class Views::Docs::DataTable < Views::Base
       ::Docs::ComponentStruct.new(name: "DataTableBulkActions", source: "#{base}/data_table_bulk_actions.rb", built_using: :phlex),
       ::Docs::ComponentStruct.new(name: "DataTableColumnToggle", source: "#{base}/data_table_column_toggle.rb", built_using: :phlex),
       ::Docs::ComponentStruct.new(name: "DataTableExpandedRow", source: "#{base}/data_table_expanded_row.rb", built_using: :phlex),
-      ::Docs::ComponentStruct.new(name: "DataTableCellText", source: "#{base}/data_table_cell_text.rb", built_using: :phlex),
-      ::Docs::ComponentStruct.new(name: "DataTableCellBadge", source: "#{base}/data_table_cell_badge.rb", built_using: :phlex),
-      ::Docs::ComponentStruct.new(name: "DataTableCellCurrency", source: "#{base}/data_table_cell_currency.rb", built_using: :phlex),
-      ::Docs::ComponentStruct.new(name: "DataTableCellNumber", source: "#{base}/data_table_cell_number.rb", built_using: :phlex),
-      ::Docs::ComponentStruct.new(name: "DataTableCellPercent", source: "#{base}/data_table_cell_percent.rb", built_using: :phlex),
-      ::Docs::ComponentStruct.new(name: "DataTableCellDate", source: "#{base}/data_table_cell_date.rb", built_using: :phlex),
-      ::Docs::ComponentStruct.new(name: "DataTableCellBoolean", source: "#{base}/data_table_cell_boolean.rb", built_using: :phlex),
-      ::Docs::ComponentStruct.new(name: "DataTableCellLink", source: "#{base}/data_table_cell_link.rb", built_using: :phlex),
-      ::Docs::ComponentStruct.new(name: "DataTableCellTruncate", source: "#{base}/data_table_cell_truncate.rb", built_using: :phlex),
       ::Docs::ComponentStruct.new(name: "DataTableController", source: "#{base}/data_table_controller.js", built_using: :stimulus)
     ]
   end
